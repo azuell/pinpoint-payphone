@@ -1,9 +1,420 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Payphone Pinpoint</title>
 
+    <script type="application/ld+json">
+        {
+            "@context" : "https://schema.org",
+            "@type" : "WebSite",
+            "name" : "Pinpoint Payphone",
+            "url" : "https://www.pinpointpayphone.com/"
+        }
+    </script>
+  <meta name="description" content="Search for the location of an Australian payphone using its phone number">
+
+  <link rel="icon" type="image/x-icon" href="./assets/logo.ico">
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <style>
+
+    :root {
+      --color-black:        #071821;
+      --color-white:        #e8e8e8;
+      --color-red:          #ff0151;
+      --color-tls-orange:   #f96449;
+      --color-tls-blue:     #0b54ff;
+      --color-tls-blue-dark:#1a2e61;
+      --color-tls-pink:     #9f168a;
+      --color-tls-cream:    #f5ede2;
+
+    }
+
+    * { 
+      margin: 0; 
+      padding: 0; 
+      box-sizing: border-box; 
+    }
+
+    html {
+      background-color: var(--color-black);
+    }
+
+    body {
+      min-height: 100vh;
+      overflow-y: scroll;
+      overflow-x: hidden;
+      background-color: var(--color-black);
+      display: flex;
+      flex-direction: column;
+      font-family: 'Press Start 2P', monospace;
+      color: var(--color-white);
+      scrollbar-gutter: stable;
+    }
+
+    #home {
+      display: flex;
+      gap: 3rem;
+      min-height: 100vh;
+      align-items: center;
+      flex-direction: column;
+      justify-content: center;
+      flex: 1;
+      padding: 2rem 1rem;
+    }
+
+    .home-text {
+      display: flex;
+      flex-direction: column;
+      max-width: 600px;
+      gap: 2rem;
+      margin: 1rem;
+      width: 100%;
+    }
+
+    .text-title {
+      font-size: clamp(1rem, 5vw, 1.5rem);
+      color: var(--color-tls-orange);
+      line-height: 1.8;
+      /* margin-bottom: 0.5rem; */
+    }
+
+    .text-intro {
+      font-size: 0.7rem;
+      color: var(--color-white);
+      line-height: 1.5;
+    }
+
+    .input-wrap {
+      display: flex;
+      flex-direction: column;
+      /* gap: 1rem; */
+      width: 100%;
+    }
+
+    .input-label {
+      font-size: 0.6rem;
+      color: var(--color-tls-blue);
+      line-height: 2;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.3rem;
+    }
+
+    .input {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 0.85rem;
+      background-color: var(--color-tls-cream);
+      color: var(--color-tls-blue-dark);
+      border: 2px solid var(--color-tls-orange);
+      padding: 0.85rem 1rem;
+      width: 100%;
+      outline: none;
+      caret-color: var(--color-tls-orange);
+      transition: border-color 0.2s;
+      margin-bottom: 1rem;
+    }
+
+    .btn {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 0.7rem;
+      background-color: var(--color-tls-blue);
+      color: var(--color-white);
+      border: 2px solid var(--color-tls-blue-dark);
+      padding: 0.85rem 1.5rem;
+      cursor: pointer;
+      letter-spacing: 0.05em;
+      transition: background-color 0.15s, color 0.15s;
+      align-self: flex-start;
+    }
+
+    .btn:hover {
+      background-color: var(--color-tls-blue);
+      color: var(--color-tls-blue-dark);
+    }
+
+    .btn:active {
+      transform: scale(0.97);
+    }
+
+    .result-box {
+      border: 2px solid var(--color-tls-orange);
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      background-color: var(--color-black);
+      width: 100%;
+    }
+
+    .result-address {
+      font-size: 0.85rem;
+      color: var(--color-white);
+      line-height: 2;
+    }
+
+    #map {
+      width: 100%;
+      height: 260px;
+      border: 2px solid var(--color-tls-blue);
+      display: none;
+    }
+
+    .leaflet-tile {
+      filter: invert(1) hue-rotate(180deg) brightness(0.85) saturate(0.6);
+    }
+
+    .leaflet-control-attribution {
+      font-family: monospace;
+      font-size: 9px;
+      background: var(--color-black);
+      color: var(--color-white);
+    }
+
+    .leaflet-control-attribution a { 
+      color: var(--color-tls-blue); 
+    }
+
+    .leaflet-popup-content-wrapper {
+      background: var(--color-tls-cream);
+      border: 1px solid var(--color-tls-pink);
+      border-radius: 0;
+      box-shadow: none;
+    }
+
+    .leaflet-popup-tip { 
+      background: var(--color-tls-pink); 
+    }
+
+    .leaflet-popup-content {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 9px;
+      color: var(--color-tls-pink);
+      line-height: 1.8;
+      margin: 10px 12px;
+    }
+
+    .result-maps {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 0.5rem;
+      color: var(--color-tls-blue);
+      text-decoration: none;
+      letter-spacing: 0.05em;
+      margin-top: 0.5rem;
+      display: inline-block;
+    }
+
+    .result-maps:hover { 
+      color: var(--color-green-mid); 
+    }
+
+    .result-maps::after { 
+      content: '↗'; 
+      vertical-align: super; 
+      font-size: 0.7em; 
+    }
+
+    .error-box {
+      border: 2px solid var(--color-red);
+      padding: 1rem 1.25rem;
+      font-size: 0.6rem;
+      color: var(--color-red);
+      line-height: 2;
+      width: 100%;
+    }
+
+    .status-line {
+      font-size: 0.45rem;
+      color: var(--color-white);
+      line-height: 2;
+    }
+
+    .footer {
+      padding: 1rem;
+      width: 100%;
+      font-family: 'Press Start 2P', monospace;
+      font-size: small;
+      background-color: var(--color-black);
+      color: white;
+      text-align: center;
+      margin-top: auto;
+      line-height: 2;
+      border-top: 1px solid var(--color-tls-blue);
+    }
+
+    .footer a { 
+      color: var(--color-tls-blue); 
+      text-decoration: none; 
+    }
+
+    .footer a:hover { 
+      color: var(--color-tls-orange); 
+    }
+
+    .link::after {
+      content: '↗';
+      vertical-align: super;
+      font-size: 0.7em;
+    }
+
+    </style>
 </head>
+
 <body>
-  <p>Coming soon :)</p>
+  <section id="home">
+    <div class="home-text">
+      <p class="text-title">PINPOINT PAYPHONE</p>
+      <p class="text-intro">Text from TLSPayphone?<br>Find out where it came from...</p>
+        
+      <div class="input-wrap">
+        <label class="input-label" for="query">Enter phone number</label>
+        <input class="input" type="text" id="query" placeholder="0396502290" autocomplete="off" />
+        <button class="btn" onclick="doSearch()">Search</button>
+      </div>
+
+      <div id="output"></div>
+      <div id="map"></div>
+
+      <p class="status-line" id="status">Loading database...</p>
+
+    </div>
+  </section>
+
+  <footer class="footer">
+    a project from <a class="link" href="https://www.amyzuell.com" target="_blank" rel="noopener noreferrer">azuell</a>
+  </footer>
+
+  <script>
+    let db = null;
+    let loadErr = null;
+    let leafletMap = null;
+    let marker = null;
+
+    const PHONE_ICON = L.icon({
+      iconUrl: "./assets/pin-payphone.svg",
+      iconSize: [36, 39],
+      iconAnchor: [13, 38],
+      popupAnchor: [5, -40]
+    });
+
+    // Import JSON payphone data
+    async function loadData() {
+      try {
+        const r = await fetch ("https://raw.githubusercontent.com/azuell/pinpoint-payphone/main/payphones.json")
+        if (!r.ok) throw new Error("HTTP " + r.status);
+        db = await r.json();
+        document.getElementById("status").textContent = Object.keys(db).length.toLocaleString() + " payphones loaded";
+      } catch(e) {
+        loadErr = e.message;
+        document.getElementById("status").textContent = "Could not load database :(";
+      }
+    }
+
+    // Create Leaflet map with marker at payphone coordinates
+    function showMap(lat, long, label) {
+      const mapEl = document.getElementById("map");
+      mapEl.style.display = "block";
+
+      if (!leafletMap) {
+        leafletMap = L.map("map", { 
+          zoomControl: true, 
+          scrollWheelZoom: false 
+        });
+        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+          attribution: `© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>`,
+          maxZoom: 19
+        }).addTo(leafletMap);
+      }
+
+      // Add payphone marker with icon and popup
+      if (marker) {
+        marker.setLatLng([lat, long]);
+        marker.getPopup().setContent(label);
+      } else {
+        marker = L.marker([lat, long], { icon: PHONE_ICON }).addTo(leafletMap);
+        marker.bindPopup(label);
+      }
+
+      leafletMap.setView([lat, long], 17);
+      setTimeout(() => leafletMap.invalidateSize(), 50);
+    }
+
+    function hideMap() {
+      document.getElementById("map").style.display = "none";
+    }
+
+    function norm(s) {
+      return s.replace(/[\s\-().+]/g, "");
+    }
+
+    function esc(s) {
+      return String(s)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    }
+
+    // Perform search with cli number input and build HTML elements to display errors or information, including map
+    function doSearch() {
+      const raw = document.getElementById("query").value.trim();
+      const out = document.getElementById("output");
+
+      if (!raw) {
+        out.innerHTML = "";
+        return;
+      }
+
+      if (!db && !loadErr) {
+        out.innerHTML = `<div class="error-box">Still loading... Try again in a moment</div>`;
+        return;
+      }
+
+      if (loadErr) {
+        out.innerHTML = `<div class="error-box">Database unavailable:<br>` + esc(loadErr) + "</div>";
+        return;
+      }
+
+      const key = norm(raw);
+      const match = Object.entries(db).find(([k]) => norm(k) === key);
+
+      if (!match) {
+        out.innerHTML = `<div class="error-box">No payphone found for<br>` + esc(raw) + "<br><br>Check the number and try again</div>";
+        hideMap();
+        return;
+      }
+
+      const [cli, p] = match;
+      const addrParts = [p.address, p.suburb, p.state, p.postcode]. filter(Boolean);
+      const addr = addrParts.join(', ');
+      const lat = p.latitude, long = p.longitude;
+
+      out.innerHTML = `
+        <div class="result-box">
+          <div>
+            <div class="result-address">${esc(addr)}</div>
+          </div>
+        </div>`;
+
+      if (lat && long) {
+        showMap(lat, long, esc(cli));
+      } else {
+        hideMap();
+      }
+    }
+
+    document.getElementById("query").addEventListener("keydown", e => {
+      if (e.key === "Enter") {
+        doSearch();
+      }
+    })
+
+    loadData();
+
+  </script>
+
 </body>
 </html>
