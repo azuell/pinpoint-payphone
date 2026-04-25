@@ -5,14 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Payphone Pinpoint</title>
 
-    <script type="application/ld+json">
-        {
-            "@context" : "https://schema.org",
-            "@type" : "WebSite",
-            "name" : "Pinpoint Payphone",
-            "url" : "https://www.pinpointpayphone.com/"
-        }
-    </script>
+  <script type="application/ld+json">
+    {
+      "@context" : "https://schema.org",
+      "@type" : "WebSite",
+      "name" : "Pinpoint Payphone",
+      "url" : "https://www.pinpointpayphone.com/"
+    }
+  </script>
   <meta name="description" content="Search for the location of an Australian payphone using its phone number">
 
   <link rel="icon" type="image/x-icon" href="./assets/logo.ico">
@@ -26,6 +26,14 @@
       navigator.serviceWorker.register("./sw.js");
     }
   </script>
+
+  <meta property="og:title" content="Pinpoint Payphone">
+  <meta property="og:description" content="Find the location of any Australian payphone by its phone number">
+  <meta property="og:image" content="https://www.pinpointpayphone.com/assets/summary_image.png">
+  <meta property="og:url" content="https://www.pinpointpayphone.com">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="https://www.pinpointpayphone.com/assets/summary_image.png">
 
   <style>
 
