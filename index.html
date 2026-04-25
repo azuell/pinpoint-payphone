@@ -31,7 +31,6 @@
       --color-tls-blue-dark:#1a2e61;
       --color-tls-pink:     #9f168a;
       --color-tls-cream:    #f5ede2;
-
     }
 
     * { 
@@ -106,16 +105,23 @@
 
     .input {
       font-family: 'Press Start 2P', monospace;
-      font-size: 0.85rem;
+      /* font-size: 0.85rem;
+      width: 100%; */
+      font-size: 16px;
+      transform: scale(0.85);
+      transform-origin: left center;
+      width: 117%;
       background-color: var(--color-tls-cream);
       color: var(--color-tls-blue-dark);
       border: 2px solid var(--color-tls-orange);
       padding: 0.85rem 1rem;
-      width: 100%;
       outline: none;
       caret-color: var(--color-tls-orange);
       transition: border-color 0.2s;
       margin-bottom: 1rem;
+      -webkit-appearance: none;
+      appearance: none;
+      border-radius: 0;
     }
 
     .btn {
